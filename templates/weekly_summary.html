@@ -5,127 +5,224 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            padding: 20px 0;
         }
+        
         .summary-container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 40px 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         }
-        .brand-name {
-            color: #3a7bd5;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-        .card-header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #f0f0f0;
-            border-radius: 15px 15px 0 0 !important;
-            padding: 20px 25px;
-        }
-        .card-header h5 {
-            margin-bottom: 0;
-            font-weight: 600;
-            color: #343a40;
-        }
-        .card-body {
-            padding: 25px;
-        }
-        .summary-title {
-            margin-bottom: 30px;
-            font-weight: 600;
-            color: #343a40;
-        }
-        .section-title {
-            font-weight: 600;
-            color: #343a40;
-            margin-top: 25px;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-        .overall-sentiment {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            background-color: #e9ecef;
-        }
-        .sentiment-positive {
-            background-color: rgba(40, 167, 69, 0.1);
-            border-left: 4px solid #28a745;
-        }
-        .sentiment-negative {
-            background-color: rgba(220, 53, 69, 0.1);
-            border-left: 4px solid #dc3545;
-        }
-        .sentiment-neutral {
-            background-color: rgba(108, 117, 125, 0.1);
-            border-left: 4px solid #6c757d;
-        }
-        .sentiment-mixed {
-            background-color: rgba(255, 193, 7, 0.1);
-            border-left: 4px solid #ffc107;
-        }
+        
         .header-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
+        
         .back-link {
             color: #6c757d;
             text-decoration: none;
             display: flex;
             align-items: center;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
+        
         .back-link i {
-            margin-right: 5px;
+            margin-right: 8px;
         }
+        
         .back-link:hover {
-            color: #5a6268;
+            color: #3a7bd5;
+            transform: translateX(-3px);
         }
+        
+        .summary-title {
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #3a7bd5, #6d5bf1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
         .date-range {
             color: #6c757d;
-            font-size: 0.9rem;
-            margin-top: 5px;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            font-weight: 500;
         }
+        
+        .card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-body {
+            padding: 30px;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: #343a40;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(to bottom, #3a7bd5, #6d5bf1);
+            border-radius: 2px;
+        }
+        
+        .overall-sentiment {
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            font-weight: 500;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sentiment-positive {
+            background: linear-gradient(135deg, rgba(32, 191, 85, 0.1), rgba(1, 186, 239, 0.1));
+            border-left: 5px solid;
+            border-image: linear-gradient(to bottom, #20bf55, #01baef) 1 100%;
+        }
+        
+        .sentiment-negative {
+            background: linear-gradient(135deg, rgba(235, 51, 73, 0.1), rgba(244, 92, 67, 0.1));
+            border-left: 5px solid;
+            border-image: linear-gradient(to bottom, #eb3349, #f45c43) 1 100%;
+        }
+        
+        .sentiment-neutral {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.1), rgba(173, 181, 189, 0.1));
+            border-left: 5px solid;
+            border-image: linear-gradient(to bottom, #6c757d, #adb5bd) 1 100%;
+        }
+        
+        .sentiment-mixed {
+            background: linear-gradient(135deg, rgba(247, 151, 30, 0.1), rgba(255, 210, 0, 0.1));
+            border-left: 5px solid;
+            border-image: linear-gradient(to bottom, #f7971e, #ffd200) 1 100%;
+        }
+        
+        .sentiment-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 3rem;
+            opacity: 0.15;
+        }
+        
         .key-event {
-            padding: 12px 15px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            border-left: 3px solid #3a7bd5;
+            padding: 18px 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.95));
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            position: relative;
+            transition: all 0.3s ease;
+            border-left: 5px solid;
+            border-image: linear-gradient(to bottom, #3a7bd5, #6d5bf1) 1 100%;
         }
+        
+        .key-event:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        
         .recommendations {
-            background-color: rgba(58, 123, 213, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
+            background: linear-gradient(135deg, rgba(58, 123, 213, 0.08), rgba(109, 91, 241, 0.08));
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            position: relative;
         }
+        
         .recommendation-title {
             font-weight: 600;
-            color: #3a7bd5;
-            margin-bottom: 10px;
+            background: linear-gradient(90deg, #3a7bd5, #6d5bf1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 15px;
+            font-size: 1.15rem;
+        }
+        
+        .recommendation-icon {
+            position: absolute;
+            right: 25px;
+            top: 25px;
+            font-size: 1.6rem;
+            background: linear-gradient(90deg, #3a7bd5, #6d5bf1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #3a7bd5, #6d5bf1);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 4px 12px rgba(58, 123, 213, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 6px 15px rgba(58, 123, 213, 0.4);
+            transform: translateY(-2px);
+            background: linear-gradient(90deg, #326fc5, #5d4ce0);
+        }
+        
+        @media (max-width: 768px) {
+            .summary-container {
+                padding: 25px 15px;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
         }
     </style>
 </head>
@@ -138,25 +235,34 @@
         </div>
         
         <h2 class="summary-title">Your Weekly Emotional Summary</h2>
-        <p class="date-range">Past 7 days summary | <span id="date-range"></span></p>
+        <p class="date-range"><i class="far fa-calendar-alt me-2"></i>Past 7 days | <span id="date-range"></span></p>
         
         <div class="card">
             <div class="card-body">
                 <h5 class="section-title">Overall Sentiment</h5>
                 
                 {% set sentiment_class = "" %}
+                {% set sentiment_icon = "" %}
+                
                 {% if "positive" in summary.overall_sentiment|lower %}
                     {% set sentiment_class = "sentiment-positive" %}
+                    {% set sentiment_icon = "fa-smile" %}
                 {% elif "negative" in summary.overall_sentiment|lower %}
                     {% set sentiment_class = "sentiment-negative" %}
+                    {% set sentiment_icon = "fa-frown" %}
                 {% elif "neutral" in summary.overall_sentiment|lower %}
                     {% set sentiment_class = "sentiment-neutral" %}
+                    {% set sentiment_icon = "fa-meh" %}
                 {% elif "mixed" in summary.overall_sentiment|lower %}
                     {% set sentiment_class = "sentiment-mixed" %}
+                    {% set sentiment_icon = "fa-balance-scale" %}
                 {% endif %}
                 
                 <div class="overall-sentiment {{ sentiment_class }}">
-                    <p class="mb-0"><strong>{{ summary.overall_sentiment }}</strong></p>
+                    <p class="mb-0">{{ summary.overall_sentiment }}</p>
+                    <div class="sentiment-icon">
+                        <i class="far {{ sentiment_icon }}"></i>
+                    </div>
                 </div>
                 
                 {% if summary.emotional_trajectory %}
@@ -186,6 +292,9 @@
                     <div class="recommendation-title">
                         <i class="fas fa-lightbulb me-2"></i> Recommendations
                     </div>
+                    <div class="recommendation-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
                     <p class="mb-0">{{ summary.recommendations }}</p>
                 </div>
                 {% endif %}
@@ -193,7 +302,7 @@
         </div>
         
         <div class="text-center">
-            <a href="{{ url_for('home') }}" class="btn btn-secondary">
+            <a href="{{ url_for('home') }}" class="btn btn-primary">
                 <i class="fas fa-home me-2"></i> Return to Dashboard
             </a>
         </div>
