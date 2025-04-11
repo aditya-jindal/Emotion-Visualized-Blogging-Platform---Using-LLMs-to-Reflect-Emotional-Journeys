@@ -295,7 +295,16 @@
                     <div class="recommendation-icon">
                         <i class="fas fa-brain"></i>
                     </div>
-                    <p class="mb-0">{{ summary.recommendations }}</p>
+                    
+                    {% if summary.recommendations is string %}
+                        <p class="mb-0">{{ summary.recommendations }}</p>
+                    {% else %}
+                        <ul class="mb-0">
+                            {% for recommendation in summary.recommendations %}
+                                <li>{{ recommendation }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
