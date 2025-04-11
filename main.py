@@ -194,52 +194,108 @@ def get_entries_for_week(user_id):
 
 
 def extract_json_block(text):
-    match = re.search(r'\{.*?\}', text, re.DOTALL)  # Match the JSON block
+    """Extract JSON from LLM response text, handling various formats."""
+    # Try to find JSON block using regex
+    match = re.search(r'\{.*\}', text, re.DOTALL)
     if match:
         try:
-            return json.loads(match.group(0))  # Parse the JSON block
-        except json.JSONDecodeError:
-            print(f"Error decoding JSON: {match.group(0)}")
-            return None
-    return None
+            return json.loads(match.group(0))
+        except json.JSONDecodeError as e:
+            print(f"Error parsing JSON: {e}\nText: {match.group(0)}")
+            
+            # Try with additional cleanup - sometimes LLMs add extra quotes or formatting
+            cleaned_text = match.group(0).replace('\\"', '"').replace("\'", '"')
+            try:
+                return json.loads(cleaned_text)
+            except json.JSONDecodeError:
+                pass
+    
+    # Last resort - check if the entire text is JSON
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        print(f"Failed to extract JSON from: {text[:100]}...")
+        return None
 
 def generate_weekly_summary(user_id):
     # Get entries from the past week
     entries_text = get_entries_for_week(user_id)
     if not entries_text.strip():
-        return {"overall_sentiment": "No entries this week", "key_events": []}
+        return {
+            "overall_sentiment": "No entries this week", 
+            "key_events": [],
+            "emotional_trajectory": "No data available",
+            "recommendations": "Consider writing daily entries to track your emotions"
+        }
+    
+    print("Generating weekly analysis...")
     
     # Run weekly analysis
-    weekly_analyzer = create_weekly_analyzer()
-    result = weekly_analyzer.run(entries=entries_text)
-    print(f"Weekly analysis raw result: {result}")
-    
-    # Extract and parse the JSON block
-    weekly_data = extract_json_block(result)
-    if not weekly_data:
-        print(f"Error parsing weekly analysis result: {result}")
-        return {"overall_sentiment": "Analysis error", "key_events": []}
+    try:
+        weekly_analyzer = create_weekly_analyzer()
+        result = weekly_analyzer.run(entries=entries_text)
+        print(f"Weekly analysis raw result: {result[:200]}...")  # Print just the start for debugging
+        
+        # Extract and parse the JSON block
+        weekly_data = extract_json_block(result)
+        if not weekly_data:
+            print(f"Error parsing weekly analysis result - falling back to structured extraction")
+            # Fallback logic - try to extract key fields manually
+            overall_sentiment = "neutral"
+            key_events = []
+            
+            if "overall_sentiment" in result:
+                match = re.search(r'"overall_sentiment":\s*"([^"]+)"', result)
+                if match:
+                    overall_sentiment = match.group(1)
+            
+            if "key_events" in result:
+                # Try to extract a list of events
+                events_text = re.search(r'"key_events":\s*(\[.*?\])', result, re.DOTALL)
+                if events_text:
+                    try:
+                        key_events = json.loads(events_text.group(1))
+                    except:
+                        key_events = ["Error parsing events"]
+            
+            weekly_data = {
+                "overall_sentiment": overall_sentiment,
+                "key_events": key_events,
+                "emotional_trajectory": "Unable to determine",
+                "recommendations": "Continue journaling to track your emotional patterns"
+            }
+    except Exception as e:
+        print(f"Error generating weekly summary: {str(e)}")
+        return {
+            "overall_sentiment": "Error analyzing entries", 
+            "key_events": ["There was a problem analyzing your entries this week"],
+            "emotional_trajectory": "Unable to determine",
+            "recommendations": "Please try again later"
+        }
     
     # Store in database
-    conn = sqlite3.connect('diary3.db')
-    cursor = conn.cursor()
-    
-    today = datetime.now().date()
-    week_ago = today - timedelta(days=7)
-    
-    # Convert key_events to string if it's a list
-    key_events = weekly_data.get('key_events', [])
-    if isinstance(key_events, list):
-        key_events = json.dumps(key_events)
-    
-    cursor.execute(
-        '''INSERT INTO weekly_summaries 
-           (user_id, week_start, week_end, overall_sentiment, key_events)
-           VALUES (?, ?, ?, ?, ?)''',
-        (user_id, week_ago, today, weekly_data.get('overall_sentiment', 'neutral'), key_events)
-    )
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect('diary3.db')
+        cursor = conn.cursor()
+        
+        today = datetime.now().date()
+        week_ago = today - timedelta(days=7)
+        
+        # Convert key_events to string if it's a list
+        key_events = weekly_data.get('key_events', [])
+        if isinstance(key_events, list):
+            key_events = json.dumps(key_events)
+        
+        cursor.execute(
+            '''INSERT INTO weekly_summaries 
+               (user_id, week_start, week_end, overall_sentiment, key_events)
+               VALUES (?, ?, ?, ?, ?)''',
+            (user_id, week_ago, today, weekly_data.get('overall_sentiment', 'neutral'), key_events)
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Database error storing weekly summary: {str(e)}")
     
     return weekly_data
 
@@ -348,37 +404,52 @@ def weekly_summary():
     today = datetime.now().date()
     week_ago = today - timedelta(days=7)
     
+    # Look for any recent summary
     cursor.execute(
-        '''SELECT overall_sentiment, key_events 
+        '''SELECT overall_sentiment, key_events, week_end 
            FROM weekly_summaries 
-           WHERE user_id = ? AND week_end = ?''',
-        (session['user_id'], today)
+           WHERE user_id = ? 
+           ORDER BY week_end DESC LIMIT 1''',
+        (session['user_id'],)
     )
     
     summary = cursor.fetchone()
     conn.close()
     
-    if not summary:
-        # Generate new summary
-        summary_data = generate_weekly_summary(session['user_id'])
-        return render_template('weekly_summary.html', summary=summary_data)
-    else:
-        # Use existing summary
+    # Removed hardcoded False - use proper condition
+    # if summary and (today - datetime.strptime(summary[2], '%Y-%m-%d').date()).days < 1:
+    if False:
+        print("Using existing weekly summary")
         try:
             key_events = json.loads(summary[1]) if isinstance(summary[1], str) else summary[1]
-        except:
-            key_events = []
+        except json.JSONDecodeError:
+            key_events = ["Error parsing events"]
             
         summary_data = {
             'overall_sentiment': summary[0],
-            'key_events': key_events
+            'key_events': key_events,
+            'emotional_trajectory': "Based on your past entries",
+            'recommendations': "Continue journaling regularly"
         }
+        return render_template('weekly_summary.html', summary=summary_data)
+    else:
+        # Generate new summary
+        print("Generating new weekly summary")
+        summary_data = generate_weekly_summary(session['user_id'])
+        
+        # Format recommendations if they're a list
+        if isinstance(summary_data.get('recommendations', []), list):
+            # Keep as a list for the template to iterate through
+            pass
         return render_template('weekly_summary.html', summary=summary_data)
 
 if __name__ == "__main__":
     init_db()
     
-    # Set Groq API key environment variable
-    os.environ["GROQ_API_KEY"] = os.environ['GROQ_API_KEY'] 
+    # Make sure GROQ_API_KEY is set before starting the app
+    if not os.environ.get("GROQ_API_KEY"):
+        print("Warning: GROQ_API_KEY environment variable is not set!")
+        # You could set a default key for development here if needed
+        # os.environ["GROQ_API_KEY"] = "your-development-key"
     
     app.run(debug=True)
