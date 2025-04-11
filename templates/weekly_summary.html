@@ -1,54 +1,221 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Weekly Summary - My Diary</title>
+    <title>Weekly Summary - EmotionInsight Journal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .summary-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .brand-name {
+            color: #3a7bd5;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .card-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #f0f0f0;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px 25px;
+        }
+        .card-header h5 {
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #343a40;
+        }
+        .card-body {
+            padding: 25px;
+        }
+        .summary-title {
+            margin-bottom: 30px;
+            font-weight: 600;
+            color: #343a40;
+        }
+        .section-title {
+            font-weight: 600;
+            color: #343a40;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .overall-sentiment {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: #e9ecef;
+        }
+        .sentiment-positive {
+            background-color: rgba(40, 167, 69, 0.1);
+            border-left: 4px solid #28a745;
+        }
+        .sentiment-negative {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left: 4px solid #dc3545;
+        }
+        .sentiment-neutral {
+            background-color: rgba(108, 117, 125, 0.1);
+            border-left: 4px solid #6c757d;
+        }
+        .sentiment-mixed {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+        }
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .back-link {
+            color: #6c757d;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+        .back-link:hover {
+            color: #5a6268;
+        }
+        .date-range {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .key-event {
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 3px solid #3a7bd5;
+        }
+        .recommendations {
+            background-color: rgba(58, 123, 213, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .recommendation-title {
+            font-weight: 600;
+            color: #3a7bd5;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Weekly Emotional Summary</h1>
+    <div class="container summary-container">
+        <div class="header-actions">
+            <a href="{{ url_for('home') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
         
-        <div class="row mt-4">
-            <div class="col">
-                <div class="card">
-                    <div class="card-header">
-                        Weekly Overview
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Overall Sentiment: {{ summary.overall_sentiment }}</h5>
-                        
-                        {% if summary.emotional_trajectory %}
-                            <h6 class="mt-4">Emotional Trajectory</h6>
-                            <p>{{ summary.emotional_trajectory }}</p>
-                        {% endif %}
-                        
-                        <h6 class="mt-4">Key Events</h6>
-                        {% if summary.key_events %}
-                            <ul>
-                                {% if summary.key_events is string %}
-                                    <li>{{ summary.key_events }}</li>
-                                {% else %}
-                                    {% for event in summary.key_events %}
-                                        <li>{{ event }}</li>
-                                    {% endfor %}
-                                {% endif %}
-                            </ul>
-                        {% else %}
-                            <p>No significant events identified.</p>
-                        {% endif %}
-                        
-                        {% if summary.recommendations %}
-                            <h6 class="mt-4">Recommendations</h6>
-                            <p>{{ summary.recommendations }}</p>
-                        {% endif %}
-                    </div>
+        <h2 class="summary-title">Your Weekly Emotional Summary</h2>
+        <p class="date-range">Past 7 days summary | <span id="date-range"></span></p>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="section-title">Overall Sentiment</h5>
+                
+                {% set sentiment_class = "" %}
+                {% if "positive" in summary.overall_sentiment|lower %}
+                    {% set sentiment_class = "sentiment-positive" %}
+                {% elif "negative" in summary.overall_sentiment|lower %}
+                    {% set sentiment_class = "sentiment-negative" %}
+                {% elif "neutral" in summary.overall_sentiment|lower %}
+                    {% set sentiment_class = "sentiment-neutral" %}
+                {% elif "mixed" in summary.overall_sentiment|lower %}
+                    {% set sentiment_class = "sentiment-mixed" %}
+                {% endif %}
+                
+                <div class="overall-sentiment {{ sentiment_class }}">
+                    <p class="mb-0"><strong>{{ summary.overall_sentiment }}</strong></p>
                 </div>
                 
-                <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3">Back</a>
+                {% if summary.emotional_trajectory %}
+                <h5 class="section-title">Emotional Trajectory</h5>
+                <p>{{ summary.emotional_trajectory }}</p>
+                {% endif %}
+                
+                <h5 class="section-title">Key Events & Emotions</h5>
+                {% if summary.key_events %}
+                    {% if summary.key_events is string %}
+                        <div class="key-event">
+                            <p class="mb-0">{{ summary.key_events }}</p>
+                        </div>
+                    {% else %}
+                        {% for event in summary.key_events %}
+                            <div class="key-event">
+                                <p class="mb-0">{{ event }}</p>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% else %}
+                    <p>No significant events identified for this week.</p>
+                {% endif %}
+                
+                {% if summary.recommendations %}
+                <div class="recommendations">
+                    <div class="recommendation-title">
+                        <i class="fas fa-lightbulb me-2"></i> Recommendations
+                    </div>
+                    <p class="mb-0">{{ summary.recommendations }}</p>
+                </div>
+                {% endif %}
             </div>
         </div>
+        
+        <div class="text-center">
+            <a href="{{ url_for('home') }}" class="btn btn-secondary">
+                <i class="fas fa-home me-2"></i> Return to Dashboard
+            </a>
+        </div>
     </div>
+
+    <script>
+        // Calculate and display date range for past 7 days
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const pastWeek = new Date();
+            pastWeek.setDate(today.getDate() - 7);
+            
+            const formatDate = (date) => {
+                return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                });
+            };
+            
+            const dateRangeText = `${formatDate(pastWeek)} - ${formatDate(today)}`;
+            document.getElementById('date-range').textContent = dateRangeText;
+        });
+    </script>
 </body>
 </html>
-        
